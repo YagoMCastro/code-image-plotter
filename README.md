@@ -15,6 +15,7 @@ This script takes a Python script file that contains `matplotlib` plotting code,
 - Python 3.x
 - `matplotlib`
 - `Pillow` (PIL)
+- Pygments
 
 Install dependencies via pip if needed:
 
