@@ -43,6 +43,11 @@ def render_code_image(code_str, width=500, font_size=16):
     return img
 
 def combine_images(code_img, plot_img):
+    if plot_img.height < code_img.height:
+        scale_factor = code_img.height / plot_img.height
+        new_width = int(plot_img.width * scale_factor)
+        plot_img = plot_img.resize((new_width, code_img.height), resample=Image.LANCZOS)
+
     height = max(code_img.height, plot_img.height)
     combined = Image.new("RGB", (code_img.width + plot_img.width, height), "white")
     combined.paste(code_img, (0, 0))
