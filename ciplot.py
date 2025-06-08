@@ -1,8 +1,12 @@
 import sys
 import os
 import io
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image
 import matplotlib.pyplot as plt
+
+from pygments import highlight
+from pygments.lexers import PythonLexer
+from pygments.formatters import ImageFormatter
 
 def fake_show(*args, **kwargs):
     pass
@@ -24,22 +28,13 @@ def render_plot_from_code(code_str):
     buf.seek(0)
     return Image.open(buf)
 
-def render_code_image(code_str, width=500, font_size=16):
-    try:
-        font = ImageFont.truetype("DejaVuSansMono.ttf", font_size)
-    except IOError:
-        font = ImageFont.load_default()
+def render_code_image_colored(code_str, font_size=16, style='monokai'):
+    formatter = ImageFormatter(font_name='DejaVu Sans Mono', font_size=font_size, style=style, line_numbers=False)
+    lexer = PythonLexer()
+    img_data = highlight(code_str, lexer, formatter)
 
-    code_lines = code_str.strip().splitlines()
-    line_height = font.getbbox("A")[3] - font.getbbox("A")[1] + 4
-    img_height = line_height * len(code_lines) + 20
-
-    img = Image.new("RGB", (width, img_height), color="white")
-    draw = ImageDraw.Draw(img)
-
-    for i, line in enumerate(code_lines):
-        draw.text((10, i * line_height + 10), line, font=font, fill="black")
-
+    buf = io.BytesIO(img_data)
+    img = Image.open(buf)
     return img
 
 def combine_images(code_img, plot_img):
@@ -74,7 +69,7 @@ except Exception as e:
     print("Error executing code:", e)
     sys.exit(1)
 
-code_img = render_code_image(code_str)
+code_img = render_code_image_colored(code_str)
 combined_img = combine_images(code_img, plot_img)
 
 combined_img.save(output_path)
