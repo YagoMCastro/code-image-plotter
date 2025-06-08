@@ -1,7 +1,7 @@
 import sys
 import os
 import io
-from PIL import Image
+from PIL import Image, ImageDraw, ImageFont
 import matplotlib.pyplot as plt
 
 def render_plot_from_code(code_str):
@@ -14,6 +14,24 @@ def render_plot_from_code(code_str):
     plt.close()
     buf.seek(0)
     return Image.open(buf)
+
+def render_code_image(code_str, width=500, font_size=16):
+	try:
+		font = ImageFont.truetype("DejaVuSansMono.ttf", font_size)
+	except IOError:
+		font = ImageFont.load_default()
+
+	code_lines = code_str.strip().splitlines()
+	line_height = font.getbbox("A")[3] - font.getbbox("A")[1] + 4
+	img_height = line_height * len(code_lines) + 20
+
+	img = Image.new("RGB", (width, img_height), color="white")
+	draw = ImageDraw.Draw(img)
+
+	for i, line in enumerate(code_lines):
+		draw.text((10, i * line_height + 10), line, font=font, fill="black")
+
+	return img
 
 if len(sys.argv) != 3:
         print("Usage: python ciplot.py input_script.py output_image.png")
@@ -34,3 +52,5 @@ try:
 except Exception as e:
 	print("Error executing code:", e)
 	sys.exit(1)
+
+code_img = render_code_image(code_str)
